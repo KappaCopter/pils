@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+<!-- Load d3.js -->
+<script src="https://d3js.org/d3.v4.js"></script>
+
+<!-- Create a div where the graph will take place -->
+<div id="div_customContent"></div>
+
+<script src = "d3.min.js"></script>
+  <body>
+    <script>
+
+        // Start by creating the svg area
+        var svg_customContent = d3.select("#div_customContent")
+          .append("svg")
+            .attr("width", 1000)
+            .attr("height", 1000)
+        
+        // Append a circle
+        svg_customContent.append("circle")
+          .attr("id", "circleCustomTooltip")
+          .attr("cx", 500)
+          .attr("cy", 300)
+          .attr("r", 50)
+          .attr("fill", "#69b3a2")
+        
+        // create a tooltip
+        var tooltip2 = d3.select("#div_customContent")
+          .append("div")
+            .style("position", "absolute")
+            .style("visibility", "hidden")
+            .style("background-color", "white")
+            .style("border", "solid")
+            .style("border-width", "1px")
+            .style("border-radius", "5px")
+            .style("padding", "10px")
+            .html("<p>I'm a tooltip written in HTML</p>");
+        
+        
+        d3.select("#circleCustomTooltip")
+          .on("mouseover", function(){return tooltip2.style("visibility", "visible");})
+          .on("mousemove", function(){return tooltip2.style("top", (event.pageY-150)+"px").style("left",(event.pageX-150)+"px");})
+          .on("mouseout", function(){return tooltip2.style("visibility", "hidden");});
+        
+        </script>
+  </body>
+</html>
