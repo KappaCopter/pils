@@ -53,7 +53,7 @@
 
 
         const query = `SELECT DISTINCT ?bodypartLabel ?diseaseLabel ?drugLabel ?numLang
-<! This is meant for the Javascript, not the HTML> WHERE {
+ WHERE {
 
   { SELECT ?disease ?bodypart ?drug (count(?lang) as ?numLang) WHERE {
     ?disease wdt:P31 wd:Q12136. #Is an instance of a disease.
