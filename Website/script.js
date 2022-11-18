@@ -15,7 +15,7 @@ svg_customContent.append("svg:image")
     .attr("xlink:href", "./images/body.png")
 
 // array containing coordinates of circles
-const coordinates = [[505, 250], [480, 300], [520, 320]];
+const coordinates = [[480, 300], [505, 250], [520, 320]];
 
 // Append circles
 for (let i = 0; i < coordinates.length; i++) {
@@ -69,60 +69,34 @@ async function wrapper() {
     }
 
     console.log(results);
-
+  
+    // create tooltips
     let bodyPartTextLiver = Array.from(bodyPartTextLiverSet).join('<br>'),
         bodyPartTextLungs = Array.from(bodyPartTextLungsSet).join('<br>'),
         bodyPartTextStomach = Array.from(bodyPartTextStomachSet).join('<br>');
 
-    // create a tooltip
-    let tooltipLiver = d3.select("#div_customContent")
-        .append("div")
-        .style("position", "absolute")
-        .style("visibility", "hidden")
-        .style("background-color", "white")
-        .style("border", "solid")
-        .style("border-width", "1px")
-        .style("border-radius", "5px")
-        .style("padding", "10px")
-        .html(bodyPartTextLiver);
+    let bodyPartArray = [bodyPartTextLiver, bodyPartTextLungs, bodyPartTextStomach];
+    let tooltips = [];
 
-    let tooltipLungs = d3.select("#div_customContent")
-        .append("div")
-        .style("position", "absolute")
-        .style("visibility", "hidden")
-        .style("background-color", "white")
-        .style("border", "solid")
-        .style("border-width", "1px")
-        .style("border-radius", "5px")
-        .style("padding", "10px")
-        .html(bodyPartTextLungs);
+    for (let i = 0; i < bodyPartArray.length; i++) {
+        tooltips[i] = d3.select("#div_customContent")
+            .append("div")
+            .style("position", "absolute")
+            .style("visibility", "hidden")
+            .style("background-color", "white")
+            .style("border", "solid")
+            .style("border-width", "1px")
+            .style("border-radius", "5px")
+            .style("padding", "10px")
+            .html(bodyPartArray[i]);
+    }
 
-    let tooltipStomach = d3.select("#div_customContent")
-        .append("div")
-        .style("position", "absolute")
-        .style("visibility", "hidden")
-        .style("background-color", "white")
-        .style("border", "solid")
-        .style("border-width", "1px")
-        .style("border-radius", "5px")
-        .style("padding", "10px")
-        .html(bodyPartTextStomach);
-
-
-    d3.select("#circleCustomTooltip1")
-        .on("mouseover", function(){return tooltipLiver.style("visibility", "visible");})
-        .on("mousemove", function(){return tooltipLiver.style("top", (event.pageY-100)+"px").style("left",(event.pageX-100)+"px");})
-        .on("mouseout", function(){return tooltipLiver.style("visibility", "hidden");});
-
-    d3.select("#circleCustomTooltip0")
-        .on("mouseover", function(){return tooltipLungs.style("visibility", "visible");})
-        .on("mousemove", function(){return tooltipLungs.style("top", (event.pageY-100)+"px").style("left",(event.pageX-100)+"px");})
-        .on("mouseout", function(){return tooltipLungs.style("visibility", "hidden");});
-
-    d3.select("#circleCustomTooltip2")
-        .on("mouseover", function(){return tooltipStomach.style("visibility", "visible");})
-        .on("mousemove", function(){return tooltipStomach.style("top", (event.pageY-100)+"px").style("left",(event.pageX-100)+"px");})
-        .on("mouseout", function(){return tooltipStomach.style("visibility", "hidden");});
+    for (let i = 0; i < bodyPartArray.length; i++) {
+        d3.select("#circleCustomTooltip" + i)
+            .on("mouseover", function(){return tooltips[i].style("visibility", "visible");})
+            .on("mousemove", function(){return tooltips[i].style("top", (event.pageY-100)+"px").style("left",(event.pageX-100)+"px");})
+            .on("mouseout", function(){return tooltips[i].style("visibility", "hidden");});
+    }
 }
 
 wrapper();
