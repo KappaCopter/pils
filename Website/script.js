@@ -79,7 +79,57 @@ async function wrapper() {
             diseaseInformationStomachSet.add(results[i].drugLabel);
         }
     }
+    
+    // List with all the data 
+    // ordered as such [[BodyPart, [[disease, drugLst], ..]], [BodyPart, [[disease, drugLst], ..]],...]
+    dataLst = [];
+    // Set of the bodyParts
+    myBodyParts= new Set();
+    for (el in results){
+            myBodyParts.add(results[el].bodypartLabel);
+    }
 
+    // Make a list out of it
+    bodyPartLst = [];
+    myBodyParts.forEach(function(value){
+        bodyPartLst.push(value);
+    })
+    
+    diseaseSet = new Set();
+    drugSet = new Set();
+
+    for (el in bodyPartLst){
+        // find all the diseases associated to the body part
+        for (i=0; i<results.length; i++){
+            if (results[i].bodypartLabel == bodyPartLst[el]){
+                diseaseSet.add(results[i].diseaseLabel);
+            }   
+        }
+        diseaseLst = [];
+        diseaseSet.forEach(function(value){
+            diseaseLst.push(value);
+        })
+        diseaseSet.clear();
+
+        // find all the drugs associated to the disease
+        myDiseaseLst = [];
+        for (el2 in diseaseLst){
+            for (i=0; i<results.length; i++){
+                if (results[i].diseaseLabel == diseaseLst[el2]){
+                    drugSet.add(results[i].drugLabel);
+                }   
+            }
+            drugLst = [];
+            drugSet.forEach(function(value){
+                drugLst.push(value);
+            })
+            myDiseaseLst.push([diseaseLst[el2], drugLst]);
+            drugSet.clear();
+        }
+        dataLst.push([bodyPartLst[el], myDiseaseLst]);
+    }   
+
+    console.log(dataLst)
     console.log(results);
   
     // create tooltips
