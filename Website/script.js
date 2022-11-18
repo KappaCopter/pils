@@ -1,4 +1,4 @@
-// Start by creating the svg area
+// create the svg area
 const svg_width = 1000;
 const svg_height = 1000;
 
@@ -8,7 +8,7 @@ let svg_customContent = d3.select("#div_customContent")
     .attr("height", svg_height)
 
 // main image position coordinates
-bodyX = 200;
+bodyX = 100;
 bodyY = 100;
 
 svg_customContent.append("svg:image")
@@ -19,9 +19,11 @@ svg_customContent.append("svg:image")
     .attr("xlink:href", "./images/body.png")
 
 // array containing coordinates of circles: liver, lungs, stomach (order matters!)
-const coordinates = [[bodyX + 140, bodyY + 200],
-    [bodyX + 165, bodyY + 150],
-    [bodyX + 180, bodyY + 220]];
+const coordinates = [
+    [bodyX + 140, bodyY + 200],     // liver
+    [bodyX + 165, bodyY + 150],     // lungs
+    [bodyX + 180, bodyY + 220]      // stomach
+];
 
 // Append circles
 for (let i = 0; i < coordinates.length; i++) {
@@ -29,8 +31,8 @@ for (let i = 0; i < coordinates.length; i++) {
         .attr("id", "circleCustomTooltip" + i)
         .attr("cx", coordinates[i][0])
         .attr("cy", coordinates[i][1])
-        .attr("r", 20)
-        .attr("fill", "#4b85ff")
+        .attr("r", 15)
+        .attr("fill", "blue")
 }
 
 let bodyPartTextLiverSet = new Set(),
@@ -126,32 +128,69 @@ async function wrapper() {
     }
 
     // create a close button for popups
-    svg_customContent.append("rect")
-        .attr("id", "closeButton")
-        .attr("x", bodyX + 570)
-        .attr("y", bodyY - 50)
-        .attr("width", 40)
-        .attr("height", 40)
-        .attr("fill", "red")
-        .attr("visibility", "hidden")
+    // svg_customContent.append("rect")
+    //     .attr("id", "closeButton")
+    //     .attr("x", bodyX + 570)
+    //     .attr("y", bodyY - 50)
+    //     .attr("width", 40)
+    //     .attr("height", 40)
+    //     .attr("fill", "red")
+    //     .attr("visibility", "hidden")
+
+    // boolean for correct popups closing
+    let letClose = false;
+
+    // function to close all popups and remove button highlight
+    function closePopups() {
+        d3.select("#closeButton").style("visibility", "hidden");
+        for (let i = 0; i < popups.length; i++)
+            popups[i].style("visibility", "hidden");
+        for (let i = 0; i < tooltips.length; i++) {
+            dehighlightCircle(i);
+        }
+        letClose = false;
+    }
+
+    function highlightCircle(i) {
+        d3.select("#circleCustomTooltip" + i).style("fill", "red");
+        d3.select("#circleCustomTooltip" + i).style("r", 20);
+    }
+
+    function dehighlightCircle(i) {
+        d3.select("#circleCustomTooltip" + i).style("fill", "blue");
+        d3.select("#circleCustomTooltip" + i).style("r", 15);
+    }
 
     // visualize tooltips and popups
     for (let i = 0; i < bodyPartArray.length; i++) {
         d3.select("#circleCustomTooltip" + i)
-            .on("click", function(){return [d3.select("#closeButton").style("visibility", "visible"), popups[i].style("visibility", "visible")];})
-            .on("mouseover", function(){return tooltips[i].style("visibility", "visible");})
-            .on("mousemove", function(){return tooltips[i].style("top", (event.pageY-60)+"px").style("left",(event.pageX-100)+"px");})
-            .on("mouseout", function(){return tooltips[i].style("visibility", "hidden");});
+            .on("click", function() {
+                closePopups();
+                d3.select("#closeButton").style("visibility", "visible");
+                popups[i].style("visibility", "visible");
+                highlightCircle(i);
+            })
+            .on("mouseover", function() {
+                tooltips[i].style("visibility", "visible");
+                highlightCircle(i);
+            })
+            .on("mousemove", function() {
+                tooltips[i].style("top", (event.pageY-70)+"px").style("left",(event.pageX-100)+"px");
+            })
+            .on("mouseout", function() {
+                if (popups[i].style("visibility") === "visible") {
+                    tooltips[i].style("visibility", "hidden");
+                } else {
+                    tooltips[i].style("visibility", "hidden");
+                    dehighlightCircle(i);
+                }
+                letClose = true;
+            });
     }
 
-    // close button functionality
-    d3.select("#closeButton")
-        .on("click", function() {
-            d3.select("#closeButton").style("visibility", "hidden");
-            for (let i = 0; i < popups.length; i++)
-                popups[i].style("visibility", "hidden");
-            })
-
+    // popups close when clicked anywhere but the circle
+    d3.select("#div_customContent")
+        .on("click", function() { if (letClose) closePopups(); })
 }
 
 wrapper();
