@@ -149,7 +149,7 @@ async function wrapper() {
         console.log(Set2.size)
         for (let i = 0; i < Set2.size; i++) {
             if (Array.from(Set1)[i] != undefined) {
-                str += '<a href = "' + Array.from(Set1)[i] + '">' + Array.from(Set2)[i] + '</a> <br>';
+                str += '<a href = "' + Array.from(Set1)[i] + '" target = "_blank">' + Array.from(Set2)[i] + '</a> <br>';
             }
             else {
                 str += Array.from(Set2)[i] + "<br>"
