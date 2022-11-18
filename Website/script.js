@@ -38,7 +38,10 @@ let bodyPartTextLiverSet = new Set(),
     bodyPartTextStomachSet = new Set(),
     diseaseInformationLiverSet = new Set(),
     diseaseInformationLungsSet = new Set(),
-    diseaseInformationStomachSet = new Set();
+    diseaseInformationStomachSet = new Set(),
+    bodyPartLinkLiverSet = new Set(),
+    bodyPartLinkLungsSet = new Set(),
+    bodyPartLinkStomachSet = new Set();
 
 const query = `SELECT DISTINCT ?bodypartLabel ?diseaseLabel ?drugLabel ?numLang ?article
 WHERE { 
@@ -71,24 +74,43 @@ async function wrapper() {
     for (let i = 0; i < results.length; i++) {
         if (results[i].bodypartLabel === 'liver') {
             bodyPartTextLiverSet.add(results[i].diseaseLabel);
+            bodyPartLinkLiverSet.add(results[i].article);
             diseaseInformationLiverSet.add(results[i].drugLabel);
         }
         else if (results[i].bodypartLabel === 'lung' || results[i].bodypartLabel === 'human lung') {
             bodyPartTextLungsSet.add(results[i].diseaseLabel);
+            bodyPartLinkLungsSet.add(results[i].article);
             diseaseInformationLungsSet.add(results[i].drugLabel);
         }
         else if (results[i].bodypartLabel === 'stomach') {
             bodyPartTextStomachSet.add(results[i].diseaseLabel);
+            bodyPartLinkStomachSet.add(results[i].article);
             diseaseInformationStomachSet.add(results[i].drugLabel);
         }
     }
 
     console.log(results);
-  
+
+    function links_for_set(Set1, Set2) {
+        var str = new String();
+        console.log(Set2.size)
+        for (let i = 0; i < Set2.size; i++) {
+            if (Array.from(Set1)[i] != undefined) {
+                str += '<a href = "' + Array.from(Set1)[i] + '">' + Array.from(Set2)[i] + '</a> <br>';
+            }
+            else {
+                str += Array.from(Set2)[i] + "<br>"
+            }
+        }
+        return str
+    }
+    
+    console.log("links_for_set is defined")
+
     // create tooltips
-    let bodyPartTextLiver = Array.from(bodyPartTextLiverSet).join('<br>'),
-        bodyPartTextLungs = Array.from(bodyPartTextLungsSet).join('<br>'),
-        bodyPartTextStomach = Array.from(bodyPartTextStomachSet).join('<br>'),
+    let bodyPartTextLiver = links_for_set(bodyPartLinkLiverSet, bodyPartTextLiverSet),
+        bodyPartTextLungs = links_for_set(bodyPartLinkLungsSet, bodyPartTextLungsSet),
+        bodyPartTextStomach = links_for_set(bodyPartLinkStomachSet, bodyPartTextStomachSet),
         diseaseInformationLiver = Array.from(diseaseInformationLiverSet).join('<br>'),
         diseaseInformationLungs = Array.from(diseaseInformationLungsSet).join('<br>'),
         diseaseInformationStomach = Array.from(diseaseInformationStomachSet).join('<br>');
@@ -127,7 +149,7 @@ async function wrapper() {
             .style("border-width", "5px")
             .style("border-radius", "5px")
             .style("padding", "50px")
-            .html(diseaseInformation[i]);
+            .html(bodyPartArray[i]);
     }
 
     // create a close button for popups
@@ -145,7 +167,7 @@ async function wrapper() {
         d3.select("#circleCustomTooltip" + i)
             .on("click", function(){return [d3.select("#closeButton").style("visibility", "visible"), popups[i].style("visibility", "visible")];})
             .on("mouseover", function(){return tooltips[i].style("visibility", "visible");})
-            .on("mousemove", function(){return tooltips[i].style("top", (event.pageY-60)+"px").style("left",(event.pageX-100)+"px");})
+            .on("mousemove", function(){return tooltips[i].style("top", (event.pageY-100)+"px").style("left",(event.pageX-100)+"px");})
             .on("mouseout", function(){return tooltips[i].style("visibility", "hidden");});
     }
 
