@@ -164,6 +164,9 @@ async function wrapper() {
 
     //create popups
     let popups = [];
+  
+    // boolean for correct popups closing
+    let letClose = false;
 
     for (let i = 0; i < bodyPartArray.length; i++) {
         popups[i] = d3.select("#div_customContent")
@@ -179,6 +182,8 @@ async function wrapper() {
             .style("border-width", "5px")
             .style("border-radius", "5px")
             .style("padding", "50px")
+            .on("mouseover", function() {letClose = false;})
+            .on("mouseout", function() {letClose = true;})
             .html(diseaseInformation[i]);
     }
 
@@ -191,9 +196,6 @@ async function wrapper() {
     //     .attr("height", 40)
     //     .attr("fill", "red")
     //     .attr("visibility", "hidden")
-
-    // boolean for correct popups closing
-    let letClose = false;
 
     // function to close all popups and remove button highlight
     function closePopups() {
