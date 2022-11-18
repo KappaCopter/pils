@@ -141,6 +141,7 @@ async function wrapper() {
     let bodyPartTextLiver = Array.from(bodyPartTextLiverSet).join('<br>'),
         bodyPartTextLungs = Array.from(bodyPartTextLungsSet).join('<br>'),
         bodyPartTextStomach = Array.from(bodyPartTextStomachSet).join('<br>'),
+        tooltipAdjustment = [bodyPartTextLiverSet, bodyPartTextLungsSet, bodyPartTextStomachSet],
         diseaseInformationLiver = Array.from(diseaseInformationLiverSet).join('<br>'),
         diseaseInformationLungs = Array.from(diseaseInformationLungsSet).join('<br>'),
         diseaseInformationStomach = Array.from(diseaseInformationStomachSet).join('<br>');
@@ -232,7 +233,7 @@ async function wrapper() {
                 highlightCircle(i);
             })
             .on("mousemove", function() {
-                tooltips[i].style("top", (event.pageY-70)+"px").style("left",(event.pageX-100)+"px");
+                tooltips[i].style("top", (event.pageY- 10 - tooltipAdjustment[i].size * 30)+"px").style("left",(event.pageX-100)+"px");
             })
             .on("mouseout", function() {
                 if (popups[i].style("visibility") === "visible") {
