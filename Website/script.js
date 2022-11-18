@@ -129,7 +129,7 @@ async function wrapper() {
         dataLst.push([bodyPartLst[el], myDiseaseLst]);
     }   
 
-    console.log(dataLst)
+    console.log(dataLst);
     console.log(results);
   
     // create tooltips
@@ -202,13 +202,13 @@ async function wrapper() {
     }
 
     function highlightCircle(i) {
-        d3.select("#circleCustomTooltip" + i).style("fill", "red");
-        d3.select("#circleCustomTooltip" + i).style("r", 20);
+        d3.select("#circleCustomTooltip" + i).attr("fill", "red");
+        d3.select("#circleCustomTooltip" + i).attr("r", 20);
     }
 
     function dehighlightCircle(i) {
-        d3.select("#circleCustomTooltip" + i).style("fill", "blue");
-        d3.select("#circleCustomTooltip" + i).style("r", 15);
+        d3.select("#circleCustomTooltip" + i).attr("fill", "blue");
+        d3.select("#circleCustomTooltip" + i).attr("r", 15);
     }
 
     // visualize tooltips and popups
