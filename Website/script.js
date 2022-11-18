@@ -252,7 +252,8 @@ async function wrapper() {
                 highlightCircle(i);
             })
             .on("mouseover", function() {
-                tooltips[i].style("visibility", "visible");
+                if (popups[i].style("visibility") === "hidden")
+                    tooltips[i].style("visibility", "visible");
                 highlightCircle(i);
             })
             .on("mousemove", function() {
