@@ -40,7 +40,7 @@ let bodyPartTextLiverSet = new Set(),
     bodyPartTextStomachSet = new Set(),
     diseaseInformationLiverSet = new Set(),
     diseaseInformationLungsSet = new Set(),
-    diseaseInformationStomachSet = new Set();
+    diseaseInformationStomachSet = new Set(),
     bodyPartLinkLiverSet = new Set(),
     bodyPartLinkLungsSet = new Set(),
     bodyPartLinkStomachSet = new Set();
@@ -93,44 +93,44 @@ async function wrapper() {
     
     // List with all the data 
     // ordered as such [[BodyPart, [[disease, drugLst], ..]], [BodyPart, [[disease, drugLst], ..]],...]
-    dataLst = [];
+    let dataLst = [];
     // Set of the bodyParts
-    myBodyParts= new Set();
-    for (el in results){
+    let myBodyParts= new Set();
+    for (let el in results){
             myBodyParts.add(results[el].bodypartLabel);
     }
 
     // Make a list out of it
-    bodyPartLst = [];
+    let bodyPartLst = [];
     myBodyParts.forEach(function(value){
         bodyPartLst.push(value);
     })
     
-    diseaseSet = new Set();
-    drugSet = new Set();
+    let diseaseSet = new Set();
+    let drugSet = new Set();
 
-    for (el in bodyPartLst){
+    for (let el in bodyPartLst){
         // find all the diseases associated to the body part
-        for (i=0; i<results.length; i++){
-            if (results[i].bodypartLabel == bodyPartLst[el]){
+        for (let i = 0; i < results.length; i++){
+            if (results[i].bodypartLabel === bodyPartLst[el]){
                 diseaseSet.add(results[i].diseaseLabel);
             }   
         }
-        diseaseLst = [];
+        let diseaseLst = [];
         diseaseSet.forEach(function(value){
             diseaseLst.push(value);
         })
         diseaseSet.clear();
 
         // find all the drugs associated to the disease
-        myDiseaseLst = [];
-        for (el2 in diseaseLst){
+        let myDiseaseLst = [];
+        for (let el2 in diseaseLst){
             for (i=0; i<results.length; i++){
-                if (results[i].diseaseLabel == diseaseLst[el2]){
+                if (results[i].diseaseLabel === diseaseLst[el2]){
                     drugSet.add(results[i].drugLabel);
                 }   
             }
-            drugLst = [];
+            let drugLst = [];
             drugSet.forEach(function(value){
                 drugLst.push(value);
             })
@@ -145,10 +145,10 @@ async function wrapper() {
   
     // Wikepedia Links function
     function links_for_set(Set1, Set2) {
-        var str = new String();
+        let str = new String();
         console.log(Set2.size)
         for (let i = 0; i < Set2.size; i++) {
-            if (Array.from(Set1)[i] != undefined) {
+            if (Array.from(Set1)[i] !== undefined) {
                 str += '<a href = "' + Array.from(Set1)[i] + '" target = "_blank">' + Array.from(Set2)[i] + '</a> <br>';
             }
             else {
