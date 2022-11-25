@@ -192,7 +192,10 @@ async function wrapper() {
             drugSet.forEach(function(value){
                 drugLst.push(value);
             })
-            myDiseaseLst.push([diseaseLst[el2][0], diseaseLst[el2][1], drugLst]);
+            if (drugLst[0] === undefined)
+                myDiseaseLst.push([diseaseLst[el2][0], diseaseLst[el2][1], ["no data"]]);
+            else
+                myDiseaseLst.push([diseaseLst[el2][0], diseaseLst[el2][1], drugLst]);
             drugSet.clear();
         }
         dataLst.push([bodyPartLst[el], myDiseaseLst]);
@@ -213,7 +216,7 @@ async function wrapper() {
             diseaseWiki = theDiseaseLst[el2][1];
             theDrugLst = theDiseaseLst[el2][2];
             myText += "<details>";
-            if (diseaseWiki != undefined){
+            if (diseaseWiki !== undefined){
                 myText += "<summary>" + disease + " <a href = '" + diseaseWiki + "' target = '_blank'>[Wiki]</a>";
             }else{
                 myText += "<summary>" + disease;
@@ -231,9 +234,53 @@ async function wrapper() {
     console.log(textDict);
 
     // create tooltips
-    let tooltipAdjustment = [bodyPartTextLiverSet, bodyPartTextLungsSet, bodyPartTextStomachSet],
-        bodyPartArray = ["liver", "human lung", "stomach", "brain"],
+    let bodyPartArray = ["liver", "human lung", "stomach", "brain"],
         tooltips = [];
+
+    // Create objects which contain unique diseases and number of languages for them
+    let diseasesLangs = {0: {}, 1: {}, 2: {}, 3: {}},
+        liverDiseasesArray = Array.from(bodyPartTextLiverSet),
+        lungsDiseasesArray = Array.from(bodyPartTextLungsSet),
+        stomachDiseasesArray = Array.from(bodyPartTextStomachSet),
+        brainDiseasesArray = Array.from(bodyPartTextBrainSet);
+
+    for (let i = 0, key; i < liverDiseasesArray.length; i++) {
+        key = liverDiseasesArray[i];
+        for (let j = 0; j < results.length; j++) {
+            if (results[j].diseaseLabel === key) {
+                diseasesLangs[0][key] = results[j].numLang;
+            }
+        }
+    }
+
+    for (let i = 0, key; i < lungsDiseasesArray.length; i++) {
+        key = lungsDiseasesArray[i];
+        for (let j = 0; j < results.length; j++) {
+            if (results[j].diseaseLabel === key) {
+                diseasesLangs[1][key] = results[j].numLang;
+            }
+        }
+    }
+
+    for (let i = 0, key; i < stomachDiseasesArray.length; i++) {
+        key = stomachDiseasesArray[i];
+        for (let j = 0; j < results.length; j++) {
+            if (results[j].diseaseLabel === key) {
+                diseasesLangs[2][key] = results[j].numLang;
+            }
+        }
+    }
+
+    for (let i = 0, key; i < brainDiseasesArray.length; i++) {
+        key = brainDiseasesArray[i];
+        for (let j = 0; j < results.length; j++) {
+            if (results[j].diseaseLabel === key) {
+                diseasesLangs[3][key] = results[j].numLang;
+            }
+        }
+    }
+
+    console.log(diseasesLangs);
 
     for (let i = 0; i < bodyPartArray.length; i++) {
         tooltips[i] = d3.select("#div_customContent")
@@ -257,8 +304,8 @@ async function wrapper() {
     for (let i = 0; i < bodyPartArray.length; i++) {
         popups[i] = d3.select("#div_customContent")
             .append("div")
-            .style("width", "210px")
-            .style("height", "400px")
+            .style("width", "400px")
+            .style("height", "600px")
             .style("top", "100px")
             .style("left", bodyX + bodySizeX + "px")
             .style("position", "absolute")
@@ -297,16 +344,57 @@ async function wrapper() {
         .style("margin-bottom", "8px")
         .style("font-weight", "bold");
 
+    // create visualizing graphs
 
-    // create a close button for popups
-    // svg_customContent.append("rect")
-    //     .attr("id", "closeButton")
-    //     .attr("x", bodyX + 570)
-    //     .attr("y", bodyY - 50)
-    //     .attr("width", 40)
-    //     .attr("height", 40)
-    //     .attr("fill", "red")
-    //     .attr("visibility", "hidden")
+    // set the dimensions and margins of the graph
+    var margin = {top: 20, right: 30, bottom: 40, left: 100},
+        width = 450 - margin.left - margin.right,
+        height = 400 - margin.top - margin.bottom;
+
+    // append the svg object to the body of the page
+    for (let i = 0; i < bodyPartArray.length; i++) {
+        var svg = popups[i]
+            .append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform",
+                "translate(" + margin.left + "," + margin.top + ")");
+
+        // Add X axis
+        var x = d3.scaleLinear()
+            .domain([0, 120])
+            .range([0, width]);
+        svg.append("g")
+            .attr("transform", "translate(0," + height + ")")
+            .call(d3.axisBottom(x))
+            .selectAll("text")
+            .attr("transform", "translate(-10,0)rotate(-45)")
+            .style("text-anchor", "end");
+
+        // Y axis
+        var y = d3.scaleBand()
+            .range([0, height])
+            .domain(Object.keys(diseasesLangs[i]))
+            .padding(.1);
+        svg.append("g")
+            .call(d3.axisLeft(y))
+
+        //Bars
+        svg.selectAll("myRect")
+            .data(Object.keys(diseasesLangs[i]))
+            .enter()
+            .append("rect")
+            .attr("x", x(0))
+            .attr("y", function (d) {
+                return y(d);
+            })
+            .attr("width", function (d) {
+                return x(diseasesLangs[i][d]);
+            })
+            .attr("height", y.bandwidth())
+            .attr("fill", "#69b3a2")
+    }
 
     // function to close all popups and remove button highlight
     function closePopups() {
@@ -333,7 +421,7 @@ async function wrapper() {
                 d3.select("#highlightedImage"  + i).attr("visibility", "visible");
             })
             .on("mousemove", function() {
-                tooltips[i].style("top", (event.pageY- 30 - tooltipAdjustment[i].size * 20)+"px").style("left",(event.pageX-100)+"px");
+                tooltips[i].style("top", (event.pageY- 50)+"px").style("left",(event.pageX-60)+"px");
             })
             .on("mouseout", function() {
                 if (popups[i].style("visibility") === "visible") {
