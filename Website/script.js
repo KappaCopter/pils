@@ -48,7 +48,7 @@ WHERE {
 
     { SELECT ?disease ?bodypart ?drug (count(?lang) as ?numLang) WHERE { 
       ?disease wdt:P31 wd:Q12136. #Is an instance of a disease.
-      ?disease wdt:P927 ?bodypart.
+      ?disease wdt:P927 ?bodypart. #Disease has anatomical location in bodypart
       OPTIONAL {?disease wdt:P2176 ?drug.}
       ?disease rdfs:label ?label
       filter(!langmatches(lang(?label), 'en')) bind(lang(?label) as ?lang)
@@ -114,6 +114,23 @@ async function wrapper() {
         diseaseInformationLiver = Array.from(diseaseInformationLiverSet).join('<br>'),
         diseaseInformationLungs = Array.from(diseaseInformationLungsSet).join('<br>'),
         diseaseInformationStomach = Array.from(diseaseInformationStomachSet).join('<br>');
+    
+    function wikipedia_intro(Set) {
+        for (let i = 0; i < Set.length; i++){
+            var url = "https://en.wikipedia.org/w/api.php"
+
+            var params = {
+                action: "query",
+                prop: "extracts",
+                exintro: "1",
+                titles: Array.from(Set)[i]
+            };
+
+            url = url + "?origin=*";
+            Object.keys(params).forEach(function(key){url += "&" + key + "=" + params[key];});
+        }
+        return url
+    }
 
     let bodyPartArray = [bodyPartTextLiver, bodyPartTextLungs, bodyPartTextStomach],
         diseaseInformation = [diseaseInformationLiver, diseaseInformationLungs, diseaseInformationStomach],
