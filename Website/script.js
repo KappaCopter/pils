@@ -91,11 +91,36 @@ async function wrapper() {
 
     console.log(results);
 
+    function wikipedia_intro(name) {
+
+        var url = "https://en.wikipedia.org/w/api.php"
+
+        var params = {
+            action: "query",
+            prop: "extracts",
+            exintro: "1",
+            explaintext: "1",
+            titles: name
+        };
+
+        url = url + "?origin=*";
+        Object.keys(params).forEach(function(key){url += "&" + key + "=" + params[key];});
+        
+        fetch(url).then(function(response) {
+            return response.text();
+        }).then(function(string) {
+            console.log(string)
+        }).catch(function(err) {
+            console.log('Fetch Error', err)
+        })
+    }
+
     function links_for_set(Set1, Set2) {
         var str = new String();
         console.log(Set2.size)
         for (let i = 0; i < Set2.size; i++) {
             if (Array.from(Set1)[i] != undefined) {
+                w = wikipedia_intro(Array.from(Set2)[i])
                 str += '<a href = "' + Array.from(Set1)[i] + '">' + Array.from(Set2)[i] + '</a> <br>';
             }
             else {
@@ -115,22 +140,6 @@ async function wrapper() {
         diseaseInformationLungs = Array.from(diseaseInformationLungsSet).join('<br>'),
         diseaseInformationStomach = Array.from(diseaseInformationStomachSet).join('<br>');
     
-    function wikipedia_intro(Set) {
-        for (let i = 0; i < Set.length; i++){
-            var url = "https://en.wikipedia.org/w/api.php"
-
-            var params = {
-                action: "query",
-                prop: "extracts",
-                exintro: "1",
-                titles: Array.from(Set)[i]
-            };
-
-            url = url + "?origin=*";
-            Object.keys(params).forEach(function(key){url += "&" + key + "=" + params[key];});
-        }
-        return url
-    }
 
     let bodyPartArray = [bodyPartTextLiver, bodyPartTextLungs, bodyPartTextStomach],
         diseaseInformation = [diseaseInformationLiver, diseaseInformationLungs, diseaseInformationStomach],
