@@ -20,9 +20,11 @@ svg_customContent.append("svg:image")
 
 // array containing coordinates of circles: liver, lungs, stomach (order matters!)
 const coordinates = [
+    [bodyX + 122, bodyY + 227],     // renal pelvis
+    [bodyX + 180, bodyY + 220],     // stomach
+    [bodyX + 122, bodyY + 227],     // kydney
     [bodyX + 140, bodyY + 200],     // liver
     [bodyX + 165, bodyY + 150],     // lungs
-    [bodyX + 180, bodyY + 220]      // stomach
 ];
 
 // Append circles
@@ -31,7 +33,7 @@ for (let i = 0; i < coordinates.length; i++) {
         .attr("id", "circleCustomTooltip" + i)
         .attr("cx", coordinates[i][0])
         .attr("cy", coordinates[i][1])
-        .attr("r", 15)
+        .attr("r", 5)
         .attr("fill", "blue")
 }
 
@@ -72,25 +74,6 @@ async function wrapper() {
     let results = await fetching.json();
     results = await wdk.simplify.sparqlResults(results);
 
-    // finding unique diseases and their treatment for each organ
-    for (let i = 0; i < results.length; i++) {
-        if (results[i].bodypartLabel === 'liver') {
-            bodyPartTextLiverSet.add(results[i].diseaseLabel);
-            bodyPartLinkLiverSet.add(results[i].article);
-            diseaseInformationLiverSet.add(results[i].drugLabel);
-        }
-        else if (results[i].bodypartLabel === 'lung' || results[i].bodypartLabel === 'human lung') {
-            bodyPartTextLungsSet.add(results[i].diseaseLabel);
-            bodyPartLinkLungsSet.add(results[i].article);
-            diseaseInformationLungsSet.add(results[i].drugLabel);
-        }
-        else if (results[i].bodypartLabel === 'stomach') {
-            bodyPartTextStomachSet.add(results[i].diseaseLabel);
-            bodyPartLinkStomachSet.add(results[i].article);
-            diseaseInformationStomachSet.add(results[i].drugLabel);
-        }
-    }
-    
     // List with all the data 
     // ordered as such [[BodyPart, [[disease, drugLst], ..]], [BodyPart, [[disease, drugLst], ..]],...]
     dataLst = [];
@@ -140,13 +123,51 @@ async function wrapper() {
         dataLst.push([bodyPartLst[el], myDiseaseLst]);
     }   
 
-    console.log(dataLst);
-    console.log(results);
+    // Texts for the pop-up
+    const textDict = Object.create(null);
+    myText = "";
+    for (el in dataLst){
+        bodyPart = dataLst[el][0];
+        theDiseaseLst = dataLst[el][1];
+        myText += "<h1>" + bodyPart + "</h1> \n";
+        for (el2 in theDiseaseLst){
+            disease = theDiseaseLst[el2][0];
+            theDrugLst = theDiseaseLst[el2][1];
+            myText += "<h2>" + disease + "</h2> \n <ul>";
+            for (el3 in theDrugLst){
+                myText += "<li>" + theDrugLst[el3] + "</li>";
+            }
+            myText += "</ul>"
+        }
+        textDict[bodyPart] = myText;
+        myText = "";
+    }
+    //console.log(textLst);
+    //console.log(textDict["renal pelvis"]);
+
+    // finding unique diseases and their treatment for each organ
+    for (let i = 0; i < results.length; i++) {
+        if (results[i].bodypartLabel === 'liver') {
+            bodyPartTextLiverSet.add(results[i].diseaseLabel);
+            bodyPartLinkLiverSet.add(results[i].article);
+        }
+        else if (results[i].bodypartLabel === 'lung' || results[i].bodypartLabel === 'human lung') {
+            bodyPartTextLungsSet.add(results[i].diseaseLabel);
+            bodyPartLinkLungsSet.add(results[i].article);
+        }
+        else if (results[i].bodypartLabel === 'stomach') {
+            bodyPartTextStomachSet.add(results[i].diseaseLabel);
+            bodyPartLinkStomachSet.add(results[i].article);
+        }
+    }
+    
+    //console.log(dataLst);
+    //console.log(results);
   
     // Wikepedia Links function
     function links_for_set(Set1, Set2) {
         var str = new String();
-        console.log(Set2.size)
+        //console.log(Set2.size)
         for (let i = 0; i < Set2.size; i++) {
             if (Array.from(Set1)[i] != undefined) {
                 str += '<a href = "' + Array.from(Set1)[i] + '" target = "_blank">' + Array.from(Set2)[i] + '</a> <br>';
@@ -158,7 +179,7 @@ async function wrapper() {
         return str
     }
 
-    console.log("links_for_set is defined")
+    //console.log("links_for_set is defined")
 
     // create tooltips
     let bodyPartTextLiver = links_for_set(bodyPartLinkLiverSet, bodyPartTextLiverSet),
@@ -173,6 +194,8 @@ async function wrapper() {
         diseaseInformation = [diseaseInformationLiver, diseaseInformationLungs, diseaseInformationStomach],
         tooltips = [];
 
+    // Change the tooltip to only have the name of the organ displayed
+
     for (let i = 0; i < bodyPartArray.length; i++) {
         tooltips[i] = d3.select("#div_customContent")
             .append("div")
@@ -185,6 +208,23 @@ async function wrapper() {
             .style("padding", "10px")
             .html(bodyPartArray[i]);
     }
+
+    // create MyPopUP
+    // Assign all the organs an index
+    organsLst = [];
+    for (const organ of Object.keys(textDict)){
+        organsLst.push(organ);
+    }
+    console.log(organsLst);
+    // Manually Assign a geographic position for the organs
+    coordinatesOrgans = [
+        [bodyX + 120, bodyY + 250] /* */, [] /* */, [] /* */, [] /* */, [] /* */, [] /* */, [] /* */, [] /* */,
+        [] /* */, [] /* */, [] /* */, [] /* */, [] /* */, [] /* */, [] /* */, [] /* */,
+    ]
+    // Instead, only target main body parts (5 or 6), eg: torso, head, arm, leg
+    // tooltip with all the organs present in this category
+    // when clicking on it, choose in a bar the organ you want
+    // shows the information: disease,..
 
     //create popups
     let popups = [];
@@ -208,7 +248,7 @@ async function wrapper() {
             .style("padding", "50px")
             .on("mouseover", function() {letClose = false;})
             .on("mouseout", function() {letClose = true;})
-            .html(bodyPartArray[i]);
+            .html(textDict[organsLst[i]]);
         }
 
     // create a close button for popups
@@ -239,7 +279,7 @@ async function wrapper() {
 
     function dehighlightCircle(i) {
         d3.select("#circleCustomTooltip" + i).attr("fill", "blue");
-        d3.select("#circleCustomTooltip" + i).attr("r", 15);
+        d3.select("#circleCustomTooltip" + i).attr("r", 5);
     }
 
     // visualize tooltips and popups
