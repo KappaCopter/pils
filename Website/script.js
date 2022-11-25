@@ -1,6 +1,6 @@
 // create the svg area
 const svg_width = 1000;
-const svg_height = 1000;
+const svg_height = 2000;
 
 let svg_customContent = d3.select("#div_customContent")
   .append("svg")
@@ -8,21 +8,63 @@ let svg_customContent = d3.select("#div_customContent")
     .attr("height", svg_height)
 
 // main image position coordinates
-bodyX = 100;
+bodyX = 50;
 bodyY = 100;
+bodySizeX = 320;
+bodySizeY = 640;
+// bodySizeX = 640;
+// bodySizeY = 1280;
 
+// add body image
 svg_customContent.append("svg:image")
     .attr('x', bodyX)
     .attr('y', bodyY)
-    .attr('width', 320)
-    .attr('height', 640)
+    .attr('width', bodySizeX)
+    .attr('height', bodySizeY)
     .attr("xlink:href", "./images/body.png")
 
-// array containing coordinates of circles: liver, lungs, stomach (order matters!)
+// add liver highlighted image
+svg_customContent.append("svg:image")
+    .attr("id", "highlightedImage0")
+    .attr('x', bodyX + bodySizeX / 2.8)
+    .attr('y', bodyY + bodySizeY / 3.48)
+    .attr('width', bodySizeX / 4)
+    .attr("xlink:href", "./images/liver.png")
+    .attr("visibility", "hidden")
+
+// add lungs highlighted image
+svg_customContent.append("svg:image")
+    .attr("id", "highlightedImage1")
+    .attr('x', bodyX + bodySizeX / 2.85)
+    .attr('y', bodyY + bodySizeY / 5.5)
+    .attr('width', bodySizeX / 3.1)
+    .attr("xlink:href", "./images/lungs.png")
+    .attr("visibility", "hidden")
+
+// add stomach highlighted image
+svg_customContent.append("svg:image")
+    .attr("id", "highlightedImage2")
+    .attr('x', bodyX + bodySizeX / 2.5)
+    .attr('y', bodyY + bodySizeY / 3.3)
+    .attr('width', bodySizeX / 4.5)
+    .attr("xlink:href", "./images/stomach.png")
+    .attr("visibility", "hidden")
+
+// add brain highlighted image
+svg_customContent.append("svg:image")
+    .attr("id", "highlightedImage3")
+    .attr('x', bodyX + bodySizeX / 2.4)
+    .attr('y', bodyY)
+    .attr('width', bodySizeX / 5.2)
+    .attr("xlink:href", "./images/brain.png")
+    .attr("visibility", "hidden")
+
+// array containing coordinates of circles: liver, lungs, stomach, brain (order matters!)
 const coordinates = [
-    [bodyX + 140, bodyY + 200],     // liver
-    [bodyX + 165, bodyY + 150],     // lungs
-    [bodyX + 180, bodyY + 220]      // stomach
+    [bodyX + bodySizeX / 2.3, bodyY + bodySizeY / 3.1],     // liver
+    [bodyX + bodySizeX / 1.95, bodyY + bodySizeY / 3.9],    // lungs
+    [bodyX + bodySizeX / 1.8, bodyY + bodySizeY / 2.9],     // stomach
+    [bodyX + bodySizeX / 1.95, bodyY + bodySizeY / 30]      // brain
 ];
 
 // Append circles
@@ -31,19 +73,22 @@ for (let i = 0; i < coordinates.length; i++) {
         .attr("id", "circleCustomTooltip" + i)
         .attr("cx", coordinates[i][0])
         .attr("cy", coordinates[i][1])
-        .attr("r", 15)
-        .attr("fill", "blue")
+        .attr("r", bodySizeX / 16)
+        .attr("fill", "transparent")
 }
 
 let bodyPartTextLiverSet = new Set(),
     bodyPartTextLungsSet = new Set(),
     bodyPartTextStomachSet = new Set(),
+    bodyPartTextBrainSet = new Set(),
     diseaseInformationLiverSet = new Set(),
     diseaseInformationLungsSet = new Set(),
     diseaseInformationStomachSet = new Set(),
+    diseaseInformationBrainSet = new Set(),
     bodyPartLinkLiverSet = new Set(),
     bodyPartLinkLungsSet = new Set(),
-    bodyPartLinkStomachSet = new Set();
+    bodyPartLinkStomachSet = new Set(),
+    bodyPartLinkBrainSet = new Set();
 
 const query = `SELECT DISTINCT ?bodypartLabel ?diseaseLabel ?drugLabel ?numLang ?article
 WHERE { 
@@ -79,7 +124,8 @@ async function wrapper() {
             bodyPartLinkLiverSet.add(results[i].article);
             diseaseInformationLiverSet.add(results[i].drugLabel);
         }
-        else if (results[i].bodypartLabel === 'lung' || results[i].bodypartLabel === 'human lung') {
+        else if (results[i].bodypartLabel === 'lung'
+            || results[i].bodypartLabel === 'human lung') {
             bodyPartTextLungsSet.add(results[i].diseaseLabel);
             bodyPartLinkLungsSet.add(results[i].article);
             diseaseInformationLungsSet.add(results[i].drugLabel);
@@ -88,6 +134,14 @@ async function wrapper() {
             bodyPartTextStomachSet.add(results[i].diseaseLabel);
             bodyPartLinkStomachSet.add(results[i].article);
             diseaseInformationStomachSet.add(results[i].drugLabel);
+        }
+        else if (results[i].bodypartLabel === 'brain'
+            || results[i].bodypartLabel === 'meninges'
+            || results[i].bodypartLabel === 'brain stem'
+            || results[i].bodypartLabel === 'corpus callosum') {
+            bodyPartTextBrainSet.add(results[i].diseaseLabel);
+            bodyPartLinkBrainSet.add(results[i].article);
+            diseaseInformationBrainSet.add(results[i].drugLabel);
         }
     }
     
@@ -164,13 +218,15 @@ async function wrapper() {
     let bodyPartTextLiver = links_for_set(bodyPartLinkLiverSet, bodyPartTextLiverSet),
         bodyPartTextLungs = links_for_set(bodyPartLinkLungsSet, bodyPartTextLungsSet),
         bodyPartTextStomach = links_for_set(bodyPartLinkStomachSet, bodyPartTextStomachSet),
-        tooltipAdjustment = [bodyPartTextLiverSet, bodyPartTextLungsSet, bodyPartTextStomachSet],
+        bodyPartTextBrain = links_for_set(bodyPartLinkBrainSet, bodyPartTextBrainSet),
+        tooltipAdjustment = [bodyPartTextLiverSet, bodyPartTextLungsSet, bodyPartTextStomachSet, bodyPartTextBrainSet],
         diseaseInformationLiver = Array.from(diseaseInformationLiverSet).join('<br>'),
         diseaseInformationLungs = Array.from(diseaseInformationLungsSet).join('<br>'),
-        diseaseInformationStomach = Array.from(diseaseInformationStomachSet).join('<br>');
+        diseaseInformationStomach = Array.from(diseaseInformationStomachSet).join('<br>'),
+        diseaseInformationBrain = Array.from(diseaseInformationBrainSet).join('<br>');
 
-    let bodyPartArray = [bodyPartTextLiver, bodyPartTextLungs, bodyPartTextStomach],
-        diseaseInformation = [diseaseInformationLiver, diseaseInformationLungs, diseaseInformationStomach],
+    let bodyPartArray = [bodyPartTextLiver, bodyPartTextLungs, bodyPartTextStomach, bodyPartTextBrain],
+        diseaseInformation = [diseaseInformationLiver, diseaseInformationLungs, diseaseInformationStomach, diseaseInformationBrain],
         tooltips = [];
 
     for (let i = 0; i < bodyPartArray.length; i++) {
@@ -198,7 +254,7 @@ async function wrapper() {
             .style("width", "210px")
             .style("height", "400px")
             .style("top", "100px")
-            .style("left", bodyX + 300 + "px")
+            .style("left", bodyX + bodySizeX + "px")
             .style("position", "absolute")
             .style("visibility", "hidden")
             .style("background-color", "white")
@@ -227,19 +283,9 @@ async function wrapper() {
         for (let i = 0; i < popups.length; i++)
             popups[i].style("visibility", "hidden");
         for (let i = 0; i < tooltips.length; i++) {
-            dehighlightCircle(i);
+            d3.select("#highlightedImage"  + i).attr("visibility", "hidden");
         }
         letClose = false;
-    }
-
-    function highlightCircle(i) {
-        d3.select("#circleCustomTooltip" + i).attr("fill", "red");
-        d3.select("#circleCustomTooltip" + i).attr("r", 20);
-    }
-
-    function dehighlightCircle(i) {
-        d3.select("#circleCustomTooltip" + i).attr("fill", "blue");
-        d3.select("#circleCustomTooltip" + i).attr("r", 15);
     }
 
     // visualize tooltips and popups
@@ -247,24 +293,23 @@ async function wrapper() {
         d3.select("#circleCustomTooltip" + i)
             .on("click", function() {
                 closePopups();
-                d3.select("#closeButton").style("visibility", "visible");
+                d3.select("#highlightedImage"  + i).attr("visibility", "visible");
                 popups[i].style("visibility", "visible");
-                highlightCircle(i);
             })
             .on("mouseover", function() {
                 if (popups[i].style("visibility") === "hidden")
                     tooltips[i].style("visibility", "visible");
-                highlightCircle(i);
+                d3.select("#highlightedImage"  + i).attr("visibility", "visible");
             })
             .on("mousemove", function() {
-                tooltips[i].style("top", (event.pageY- 10 - tooltipAdjustment[i].size * 30)+"px").style("left",(event.pageX-100)+"px");
+                tooltips[i].style("top", (event.pageY- 30 - tooltipAdjustment[i].size * 20)+"px").style("left",(event.pageX-100)+"px");
             })
             .on("mouseout", function() {
                 if (popups[i].style("visibility") === "visible") {
                     tooltips[i].style("visibility", "hidden");
                 } else {
                     tooltips[i].style("visibility", "hidden");
-                    dehighlightCircle(i);
+                    d3.select("#highlightedImage"  + i).attr("visibility", "hidden");
                 }
                 letClose = true;
             });
