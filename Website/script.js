@@ -196,6 +196,51 @@ async function wrapper() {
 
     console.log(dataLst);
     console.log(results);
+
+    // async function fetchTest(url) {
+    //     let response = await fetch(url);
+    //     let responseText = await getTextFromStream(response.body);
+        
+    //     document.getElementById('result').innerHTML = responseText;
+    // }
+    
+    // async function getTextFromStream(readableStream) {
+    //     let reader = readableStream.getReader();
+    //     let utf8Decoder = new TextDecoder();
+    //     let nextChunk;
+        
+    //     let resultStr = '';
+        
+    //     while (!(nextChunk = await reader.read()).done) {
+    //         let partialData = nextChunk.value;
+    //         resultStr += utf8Decoder.decode(partialData);
+    //     }
+        
+    //     return resultStr;
+    // }
+    
+    // (async() => {
+    //     await fetchTest();
+    // })();
+
+    function wikipedia_intro(str) {
+        var url = "https://en.wikipedia.org/w/api.php"; 
+
+        var params = {
+            action: "query",
+            titles: str,
+            prop: "extracts",
+            exintro: "1",
+            explaintext: "1"
+        };
+
+        url = url + "?origin=*";
+        Object.keys(params).forEach(function(key){url += "&" + key + "=" + params[key];});
+        
+        return url
+    }
+
+
   
     // Wikepedia Links function
     function links_for_set(Set1, Set2) {
@@ -203,7 +248,8 @@ async function wrapper() {
         console.log(Set2.size)
         for (let i = 0; i < Set2.size; i++) {
             if (Array.from(Set1)[i] !== undefined) {
-                str += '<a href = "' + Array.from(Set1)[i] + '" target = "_blank">' + Array.from(Set2)[i] + '</a> <br>';
+                wik = wikipedia_intro(Array.from(Set2)[i])
+                str += '<a href = "' + Array.from(Set1)[i] + '" target = "_blank">' + Array.from(Set2)[i] + '</a> <br>' + wik + "<br>";
             }
             else {
                 str += Array.from(Set2)[i] + "<br>"
@@ -302,7 +348,7 @@ async function wrapper() {
                 d3.select("#highlightedImage"  + i).attr("visibility", "visible");
             })
             .on("mousemove", function() {
-                tooltips[i].style("top", (event.pageY- 30 - tooltipAdjustment[i].size * 20)+"px").style("left",(event.pageX-100)+"px");
+                tooltips[i].style("top", (event.pageY- 30 - tooltipAdjustment[i].size * 30)+"px").style("left",(event.pageX-100)+"px");
             })
             .on("mouseout", function() {
                 if (popups[i].style("visibility") === "visible") {
