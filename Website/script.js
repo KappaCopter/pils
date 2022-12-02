@@ -211,9 +211,6 @@ async function wrapper() {
         dataLst.push([bodyPartLst[el], myDiseaseLst]);
     }   
 
-    console.log(dataLst);
-    //console.log(results);
-
     //Stolen wholesale from https://stackoverflow.com/questions/17267329/converting-unicode-character-to-string-format
 
     function unicodeToChar(text) {
@@ -230,7 +227,6 @@ async function wrapper() {
         let str = String();
         str = str1.replace("https://en.wikipedia.org/wiki/", "")
 
-
         var url = "https://en.wikipedia.org/w/api.php"; 
 
         var params = {
@@ -244,14 +240,11 @@ async function wrapper() {
 
         url = url + "?origin=*";
         Object.keys(params).forEach(function(key){url += "&" + key + "=" + params[key];});
-        
-        console.log(url)
 
         let res = await fetch(url);
         let wiki =  await res.text();
         wik = wiki.split('"extract":"').pop().split('"}}}}')[0]
         // ^ removes everything but the extract itself. Again, not the best execution, but functional
-        console.log(wik)
         return unicodeToChar(wik)
 
     }
@@ -287,7 +280,6 @@ async function wrapper() {
         }
         textDict[bodyPart] = [myTitle, myText];
     }
-    console.log(textDict);
 
     
     // create tooltips
