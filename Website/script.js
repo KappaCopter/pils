@@ -310,13 +310,25 @@ async function wrapper() {
         .style("border-bottom", "1px solid black")
         .style("padding-bottom", "2px")
         .style("margin-bottom", "8px")
+        .style("margin-top", "8px")
         .style("font-weight", "bold");
 
     dropDownSubtitle = d3.selectAll(".popUp")
         .selectAll(".subTitle")
+        .style("cursor", "pointer")
         .style("margin-top", "10px")
         .style("margin-bottom","2px")
-        .style("font-weight", "bold");
+        .style("font-weight", "bold")
+        .style("padding-left", "0px");
+
+    dropDownLst = d3.selectAll(".popUp")
+        .selectAll("ul")
+        .style("margin-top", "10px")
+        .style("padding-left", "15px");
+    
+    dropDownPoints = d3.selectAll(".popUp")
+        .selectAll("li")
+        .style("margin-left", "25px");
 
     // create visualizing graphs
     // set the dimensions and margins of the graph
