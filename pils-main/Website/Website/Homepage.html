@@ -1,0 +1,84 @@
+<!-- PRA3006 Assignment -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Import relevant style elements -->
+  <!-- Font --> <link href='https://fonts.googleapis.com/css?family=DM%20Sans' rel='stylesheet'>
+  <!-- Stylesheet --> <link rel='stylesheet' href="stylesheet.css">
+  <!-- d3 library --> <script src="https://d3js.org/d3.v4.min.js"></script>
+  
+  <title>Human Body Interface</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Lines 18-27 adapated from Egon W., 2020 - https://github.com/egonw/pils/blob/master/day2.md -->
+    <!-- Initialize a global WBK function -->
+    <script src="https://cdn.rawgit.com/maxlath/wikidata-sdk/dist/dist/wikibase-sdk.min.js"></script>
+	
+    <!-- A: Use the WBK function to initialize a global wikidata object -->
+    <script src="https://cdn.rawgit.com/maxlath/wikidata-sdk/dist/dist/wikidata-sdk.min.js"></script>
+    <!-- B: Use the WBK function to initialize a global bio2rdf object -->
+    <script>
+      const bio2r = new WBK({
+        instance: 'https://bio2rdf.org/',
+        sparqlEndpoint: 'https://bio2rdf.org/sparql'
+      });
+    </script>
+</head>
+
+<body>
+
+  <!-- Load d3.js -->
+<script src="https://d3js.org/d3.v4.js"></script>
+
+<!-- Initialize a global WBK function -->
+<script src="https://cdn.rawgit.com/maxlath/wikidata-sdk/dist/dist/wikibase-sdk.min.js"></script>
+<!-- Initialize a global wdk object using the WBK object -->
+<script src="https://cdn.rawgit.com/maxlath/wikidata-sdk/dist/dist/wikidata-sdk.min.js"></script>
+
+	
+<!-- PART A: COMPONENTS VISIBLE ON THE PAGE -->
+
+	
+<!-- Title -->	
+  <div class="titl">
+      Most Common Diseases per Body Part
+  </div>
+
+<!-- Navigation Bar -->
+<!-- |--- Buttons link to respective webpages in same folder    -->	
+<!-- |--- Styling: Hover/Current page effects                   -->	
+<div class="bar">
+  <ul>
+    <li><a class="current" href="Homepage.html">Home</a></li>
+    <li><a href="Background.html">Background</a></li>
+    <li><a href="Databases.html">Databases</a></li>
+    <li><a class="final" href="About.html">About</a></li>
+  </ul>
+</div>
+
+<!-- Usage instructions -->	
+<div class="boxUnit">
+  <span class="boxUnitTitle">&ensp; How the Tool Works &ensp;</span>
+  <!-- Steps 1-4 -->	
+  <!-- Do *NOT* edit the spaces/line changes here, whitespace in the following div shows as whitespace on the page, has been edited accordingly -->	
+  <div class="standardBodyText" style="width:55%;white-space:pre;margin:auto;text-align:left;"
+     ><br><br><div class="stepOrdinal" style="border:3px solid #5C5350;">1</div>           Hover over the Body Part You're Interested in
+  <br><div class="stepOrdinal" style="border:3px solid #5C5350;">2</div>           A Pop Up will Appear With the most prevalent Disease
+  <br><div class="stepOrdinal" style="border:3px solid #5C5350;">3</div>           Click the Disease you want more Info on
+  
+  </div>
+</div>
+
+<div class="boxUnit">
+  <span class="boxUnitTitle">&ensp; The Human Body Inface &ensp;</span>
+  
+<!-- Create a div where the graph will take place -->
+<div id="div_customContent" class="figure" style="width:65%;">
+    <script src="script.js"></script>
+</div>
+</div>
+
+
+</body>
+</html>
