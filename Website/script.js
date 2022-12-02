@@ -59,6 +59,14 @@ svg_customContent.append("svg:image")
     .attr("xlink:href", "./images/brain.png")
     .attr("visibility", "hidden")
 
+// add loading image
+svg_customContent.append("svg:image")
+    .attr("id", "loadingImage")
+    .attr('x', bodyX + bodySizeX / 20)
+    .attr('y', bodyY)
+    .attr('width', 300)
+    .attr("xlink:href", "./images/loading_image.png")
+
 // array containing coordinates of circles: liver, lungs, stomach, brain (order matters!)
 const coordinates = [
     [bodyX + bodySizeX / 2.3, bodyY + bodySizeY / 3.1],     // liver
@@ -490,6 +498,8 @@ async function wrapper() {
             .attr("height", y.bandwidth())
             .attr("fill", "#69b3a2")
     }
+
+    d3.select("#loadingImage").attr("visibility", "hidden");
 
     // function to close all popups and remove button highlight
     function closePopups() {
