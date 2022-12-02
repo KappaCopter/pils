@@ -85,19 +85,6 @@ for (let i = 0; i < coordinates.length; i++) {
         .attr("fill", "transparent")
 }
 
-let bodyPartTextLiverSet = new Set(),
-    bodyPartTextLungsSet = new Set(),
-    bodyPartTextStomachSet = new Set(),
-    bodyPartTextBrainSet = new Set(),
-    diseaseInformationLiverSet = new Set(),
-    diseaseInformationLungsSet = new Set(),
-    diseaseInformationStomachSet = new Set(),
-    diseaseInformationBrainSet = new Set(),
-    bodyPartLinkLiverSet = new Set(),
-    bodyPartLinkLungsSet = new Set(),
-    bodyPartLinkStomachSet = new Set(),
-    bodyPartLinkBrainSet = new Set();
-
 //This query finds all wikidata entries with more than 4 languages that are an instance of a disease and
 //have an anatomical location. It also returns the anatomical location and the drugs that physically interact with the disease.
 const query = `SELECT DISTINCT ?bodypartLabel ?diseaseLabel ?drugLabel ?numLang ?article
@@ -126,38 +113,11 @@ async function wrapper() {
     const fetching = await fetch(url);
     let results = await fetching.json();
     results = await wdk.simplify.sparqlResults(results);
-
-    // finding unique diseases and their treatment for each organ
-    for (let i = 0; i < results.length; i++) {
-        if (results[i].bodypartLabel === 'liver') {
-            bodyPartTextLiverSet.add(results[i].diseaseLabel);
-            bodyPartLinkLiverSet.add(results[i].article);
-            diseaseInformationLiverSet.add(results[i].drugLabel);
-        }
-        else if (results[i].bodypartLabel === 'lung'
-            || results[i].bodypartLabel === 'human lung') {
-            bodyPartTextLungsSet.add(results[i].diseaseLabel);
-            bodyPartLinkLungsSet.add(results[i].article);
-            diseaseInformationLungsSet.add(results[i].drugLabel);
-        }
-        else if (results[i].bodypartLabel === 'stomach') {
-            bodyPartTextStomachSet.add(results[i].diseaseLabel);
-            bodyPartLinkStomachSet.add(results[i].article);
-            diseaseInformationStomachSet.add(results[i].drugLabel);
-        }
-        else if (results[i].bodypartLabel === 'brain'
-            || results[i].bodypartLabel === 'meninges'
-            || results[i].bodypartLabel === 'brain stem'
-            || results[i].bodypartLabel === 'corpus callosum') {
-            bodyPartTextBrainSet.add(results[i].diseaseLabel);
-            bodyPartLinkBrainSet.add(results[i].article);
-            diseaseInformationBrainSet.add(results[i].drugLabel);
-        }
-    }
     
     // List with all the data 
-    // ordered as such [[BodyPart, [[disease,  wikipediaLink, drugLst], ..]], [BodyPart, [[disease,  wikipediaLink, drugLst], ..]],...]
+    // ordered as such [[BodyPart, [[disease,  wikipediaLink, numLang drugLst], ..]], [BodyPart, [[disease,  wikipediaLink, drugLst], ..]],...]
     let dataLst = [];
+    let dataDic = {};
     // Set of the bodyParts
     let myBodyParts= new Set();
     for (let el in results){
@@ -179,7 +139,7 @@ async function wrapper() {
         for (let i = 0; i < results.length; i++){
             if (results[i].bodypartLabel === bodyPartLst[el]){
                 if (!testSet.has(results[i].diseaseLabel)){
-                    diseaseSet.add([results[i].diseaseLabel, results[i].article]);
+                    diseaseSet.add([results[i].diseaseLabel, results[i].article, results[i].numLang]);
                 }
                 testSet.add(results[i].diseaseLabel);
             }   
@@ -200,15 +160,17 @@ async function wrapper() {
             }
             let drugLst = [];
             drugSet.forEach(function(value){
-                drugLst.push(value);
+                if (value == undefined){
+                    drugLst.push("no data");
+                } else{
+                    drugLst.push(value);
+                }  
             })
-            if (drugLst[0] === undefined)
-                myDiseaseLst.push([diseaseLst[el2][0], diseaseLst[el2][1], ["no data"]]);
-            else
-                myDiseaseLst.push([diseaseLst[el2][0], diseaseLst[el2][1], drugLst]);
+            myDiseaseLst.push([diseaseLst[el2][0], diseaseLst[el2][1], diseaseLst[el2][2], drugLst]);
             drugSet.clear();
         }
         dataLst.push([bodyPartLst[el], myDiseaseLst]);
+        dataDic[bodyPartLst[el]] = myDiseaseLst;
     }   
 
     //Stolen wholesale from https://stackoverflow.com/questions/17267329/converting-unicode-character-to-string-format
@@ -260,23 +222,21 @@ async function wrapper() {
         for (el2 in theDiseaseLst){
             disease = theDiseaseLst[el2][0];
             diseaseWiki = theDiseaseLst[el2][1];
-            theDrugLst = theDiseaseLst[el2][2];
+            theDrugLst = theDiseaseLst[el2][3];
             myText += "<details>";
+            wik = "";
             if (diseaseWiki !== undefined){
                 //This is where we get the extract for every disease where it's applicable.
                 //Unfortunately, this makes the pop-up take a while to load as it's getting a bunch of articles that don't actually matter
                 wik = await wikipedia_intro(diseaseWiki);
-                myText += "<summary>" + disease  + " <a href = '" + diseaseWiki + "' target = '_blank'>[Wiki]</a>";
-                myText += "</summary> <ol>" + wik + "<br><br>";
-            }else{
-                myText += "<summary>" + disease;
-                myText += "</summary> <ol>";
             }
-            myText += '<strong> List of drugs that physically interact with the disease.</strong><br>'
+            myText += "<summary class='summary'>" + disease + " <a href = '" + diseaseWiki;
+            myText += "' target = '_blank'>[Wiki]</a></summary><ol>" + wik;
+            myText += "<details><summary class='subTitle'> List of drugs that physically interact with the disease.</summary>";
             for (el3 in theDrugLst){
                 myText += "<li>" + theDrugLst[el3] + "</li>";
             }
-            myText += "</ol></details>";
+            myText += "</ol></details></details>";
         }
         textDict[bodyPart] = [myTitle, myText];
     }
@@ -299,49 +259,6 @@ async function wrapper() {
             .html(bodyPartArray[i][0]);
     }
 
-    // Create objects which contain unique diseases and number of languages for them
-    let diseasesLangs = {0: {}, 1: {}, 2: {}, 3: {}},
-        liverDiseasesArray = Array.from(bodyPartTextLiverSet),
-        lungsDiseasesArray = Array.from(bodyPartTextLungsSet),
-        stomachDiseasesArray = Array.from(bodyPartTextStomachSet),
-        brainDiseasesArray = Array.from(bodyPartTextBrainSet);
-
-    for (let i = 0, key; i < liverDiseasesArray.length; i++) {
-        key = liverDiseasesArray[i];
-        for (let j = 0; j < results.length; j++) {
-            if (results[j].diseaseLabel === key) {
-                diseasesLangs[0][key] = results[j].numLang;
-            }
-        }
-    }
-
-    for (let i = 0, key; i < lungsDiseasesArray.length; i++) {
-        key = lungsDiseasesArray[i];
-        for (let j = 0; j < results.length; j++) {
-            if (results[j].diseaseLabel === key) {
-                diseasesLangs[1][key] = results[j].numLang;
-            }
-        }
-    }
-
-    for (let i = 0, key; i < stomachDiseasesArray.length; i++) {
-        key = stomachDiseasesArray[i];
-        for (let j = 0; j < results.length; j++) {
-            if (results[j].diseaseLabel === key) {
-                diseasesLangs[2][key] = results[j].numLang;
-            }
-        }
-    }
-
-    for (let i = 0, key; i < brainDiseasesArray.length; i++) {
-        key = brainDiseasesArray[i];
-        for (let j = 0; j < results.length; j++) {
-            if (results[j].diseaseLabel === key) {
-                diseasesLangs[3][key] = results[j].numLang;
-            }
-        }
-    }
-
     //create popups
     let popups = [];
   
@@ -351,7 +268,7 @@ async function wrapper() {
     for (let i = 0; i < bodyPartArray.length; i++) {
         popUpText = "";
         for (let el = 0; el < bodyPartArray[i].length; el++){
-            if (el ==0){
+            if (el == 0){
                 popUpText += textDict[bodyPartArray[i][el]][0];
             }
             popUpText += textDict[bodyPartArray[i][el]][1];
@@ -385,17 +302,19 @@ async function wrapper() {
         .style("text-decoration", "underline double")
         .style("margin-bottom", "10px")
         .style("margin-top", "10px");
-
-    subtitle = d3.selectAll(".popUp")
-        .selectAll("h2")
-        .style("border-bottom", "1px solid black");
-
+        
     dropDown = d3.selectAll(".popUp")
-        .selectAll("summary")  
+        .selectAll(".summary")  
         .style("cursor", "pointer")
         .style("border-bottom", "1px solid black")
         .style("padding-bottom", "2px")
         .style("margin-bottom", "8px")
+        .style("font-weight", "bold");
+
+    dropDownSubtitle = d3.selectAll(".popUp")
+        .selectAll(".subTitle")
+        .style("margin-top", "10px")
+        .style("margin-bottom","2px")
         .style("font-weight", "bold");
 
     // create visualizing graphs
@@ -431,7 +350,14 @@ async function wrapper() {
 
     // append the svg object to the body of the page
     for (let i = 0; i < bodyPartArray.length; i++) {
-        let svg = popups[i]
+        let disease = {};
+        for (el in bodyPartArray[i]){
+            for (el2 in dataDic[bodyPartArray[i][el]]){
+                disease[dataDic[bodyPartArray[i][el]][el2][0]] = dataDic[bodyPartArray[i][el]][el2][2];
+            }
+        }
+
+        var svg = popups[i]
             .append("svg")
             .attr("width", width + margin.left + margin.right)
             .attr("height", height + margin.top + margin.bottom)
@@ -449,9 +375,9 @@ async function wrapper() {
 
         // find max value in the data to scale the X axis
         let max = 0
-        for (let j = 0; j < Object.values(diseasesLangs[i]).length; j++) {
-            if (Object.values(diseasesLangs[i])[j] > max)
-                max = Object.values(diseasesLangs[i])[j];
+        for (let j = 0; j < Object.values(disease).length; j++) {
+            if (Object.values(disease)[j] > max)
+                max = Object.values(disease)[j];
         }
 
         // Add X axis
@@ -465,10 +391,11 @@ async function wrapper() {
             .attr("transform", "translate(-10,0)rotate(-45)")
             .style("text-anchor", "end");
 
+        //console.log(Object.keys(diseasesLangs[i]))
         // Y axis
         let y = d3.scaleBand()
             .range([0, height])
-            .domain(Object.keys(diseasesLangs[i]))
+            .domain(Object.keys(disease))
             .padding(.1);
         svg.append("g")
             .call(d3.axisLeft(y))
@@ -477,7 +404,7 @@ async function wrapper() {
 
         //Bars
         svg.selectAll("myRect")
-            .data(Object.keys(diseasesLangs[i]))
+            .data(Object.keys(disease))
             .enter()
             .append("rect")
             .attr("x", x(0))
@@ -485,7 +412,7 @@ async function wrapper() {
                 return y(d);
             })
             .attr("width", function (d) {
-                return x(diseasesLangs[i][d]);
+                return x(disease[d]);
             })
             .attr("height", y.bandwidth())
             .attr("fill", "#69b3a2")
