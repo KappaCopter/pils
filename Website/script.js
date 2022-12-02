@@ -445,7 +445,7 @@ async function wrapper() {
             .attr("y", -margin.top / 2)
             .attr("text-anchor", "middle")
             .style("font-size", "16px")
-            .text("Number of Languages for the Diseases");
+            .text("Number of Pages in Different Languages on WikiData");
 
         // find max value in the data to scale the X axis
         let max = 0
