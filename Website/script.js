@@ -237,6 +237,19 @@ async function wrapper() {
     let bodyPartArray = [["liver"], ["human lung"], ["stomach"], ["brain", "meninges", 'corpus callosum', "brain stem"]],
         tooltips = [];
 
+    for (let i = 0; i < bodyPartArray.length; i++) {
+        tooltips[i] = d3.select("#div_customContent")
+            .append("div")
+            .style("position", "absolute")
+            .style("visibility", "hidden")
+            .style("background-color", "white")
+            .style("border", "solid")
+            .style("border-width", "1px")
+            .style("border-radius", "5px")
+            .style("padding", "10px")
+            .html(bodyPartArray[i][0]);
+    }
+
     // Create objects which contain unique diseases and number of languages for them
     let diseasesLangs = {0: {}, 1: {}, 2: {}, 3: {}},
         liverDiseasesArray = Array.from(bodyPartTextLiverSet),
@@ -278,21 +291,6 @@ async function wrapper() {
                 diseasesLangs[3][key] = results[j].numLang;
             }
         }
-    }
-
-    //console.log(diseasesLangs);
-
-    for (let i = 0; i < bodyPartArray.length; i++) {
-        tooltips[i] = d3.select("#div_customContent")
-            .append("div")
-            .style("position", "absolute")
-            .style("visibility", "hidden")
-            .style("background-color", "white")
-            .style("border", "solid")
-            .style("border-width", "1px")
-            .style("border-radius", "5px")
-            .style("padding", "10px")
-            .html(bodyPartArray[i][0]);
     }
 
     //create popups
@@ -352,15 +350,39 @@ async function wrapper() {
         .style("font-weight", "bold");
 
     // create visualizing graphs
-
     // set the dimensions and margins of the graph
-    var margin = {top: 20, right: 30, bottom: 40, left: 100},
+    let margin = {top: 30, right: 30, bottom: 40, left: 100},
         width = 450 - margin.left - margin.right,
         height = 400 - margin.top - margin.bottom;
 
+    // function for labels wrapping adapted from https://bl.ocks.org/mbostock/7555321
+    function wrap(text, width) {
+        text.each(function() {
+            var text = d3.select(this),
+                words = text.text().split(/\s+/).reverse(),
+                word,
+                line = [],
+                lineNumber = 0,
+                lineHeight = 1.1, // ems
+                y = text.attr("y"),
+                dy = parseFloat(text.attr("dy")),
+                tspan = text.text(null).append("tspan").attr("x", -10).attr("y", y - 1).attr("dy", dy + "em");
+            while (word = words.pop()) {
+                line.push(word);
+                tspan.text(line.join(" "));
+                if (tspan.node().getComputedTextLength() > width) {
+                    line.pop();
+                    tspan.text(line.join(" "));
+                    line = [word];
+                    tspan = text.append("tspan").attr("x", -10).attr("y", y - 1).attr("dy", ++lineNumber * lineHeight + dy + "em").text(word);
+                }
+            }
+        });
+    }
+
     // append the svg object to the body of the page
     for (let i = 0; i < bodyPartArray.length; i++) {
-        var svg = popups[i]
+        let svg = popups[i]
             .append("svg")
             .attr("width", width + margin.left + margin.right)
             .attr("height", height + margin.top + margin.bottom)
@@ -368,9 +390,24 @@ async function wrapper() {
             .attr("transform",
                 "translate(" + margin.left + "," + margin.top + ")");
 
+        // add title
+        svg.append("text")
+            .attr("x", width / 3)
+            .attr("y", -margin.top / 2)
+            .attr("text-anchor", "middle")
+            .style("font-size", "16px")
+            .text("Number of Languages for the Diseases");
+
+        // find max value in the data to scale the X axis
+        let max = 0
+        for (let j = 0; j < Object.values(diseasesLangs[i]).length; j++) {
+            if (Object.values(diseasesLangs[i])[j] > max)
+                max = Object.values(diseasesLangs[i])[j];
+        }
+
         // Add X axis
-        var x = d3.scaleLinear()
-            .domain([0, 120])
+        let x = d3.scaleLinear()
+            .domain([0, max + max / 10])
             .range([0, width]);
         svg.append("g")
             .attr("transform", "translate(0," + height + ")")
@@ -380,12 +417,14 @@ async function wrapper() {
             .style("text-anchor", "end");
 
         // Y axis
-        var y = d3.scaleBand()
+        let y = d3.scaleBand()
             .range([0, height])
             .domain(Object.keys(diseasesLangs[i]))
             .padding(.1);
         svg.append("g")
             .call(d3.axisLeft(y))
+            .selectAll(".tick text")
+            .call(wrap, margin.left - 10);
 
         //Bars
         svg.selectAll("myRect")
