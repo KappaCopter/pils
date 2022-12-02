@@ -206,11 +206,12 @@ async function wrapper() {
   
     // Texts for the pop-up
     const textDict = Object.create(null);
-    myText = "";
+    
     for (el in dataLst){
+        myText = "";
         bodyPart = dataLst[el][0];
         theDiseaseLst = dataLst[el][1];
-        myText += "<h1>" + bodyPart + "</h1> \n";
+        myTitle = "<h1>" + bodyPart + "</h1> \n";
         for (el2 in theDiseaseLst){
             disease = theDiseaseLst[el2][0];
             diseaseWiki = theDiseaseLst[el2][1];
@@ -227,14 +228,13 @@ async function wrapper() {
             }
             myText += "</ol></details>";
         }
-        myText += ""
-        textDict[bodyPart] = myText;
-        myText = "";
+        textDict[bodyPart] = [myTitle, myText];
     }
     console.log(textDict);
 
+    
     // create tooltips
-    let bodyPartArray = ["liver", "human lung", "stomach", "brain"],
+    let bodyPartArray = [["liver"], ["human lung"], ["stomach"], ["brain", "meninges", 'corpus callosum', "brain stem"]],
         tooltips = [];
 
     // Create objects which contain unique diseases and number of languages for them
@@ -280,7 +280,7 @@ async function wrapper() {
         }
     }
 
-    console.log(diseasesLangs);
+    //console.log(diseasesLangs);
 
     for (let i = 0; i < bodyPartArray.length; i++) {
         tooltips[i] = d3.select("#div_customContent")
@@ -292,7 +292,7 @@ async function wrapper() {
             .style("border-width", "1px")
             .style("border-radius", "5px")
             .style("padding", "10px")
-            .html(bodyPartArray[i]);
+            .html(bodyPartArray[i][0]);
     }
 
     //create popups
@@ -302,6 +302,13 @@ async function wrapper() {
     let letClose = false;
 
     for (let i = 0; i < bodyPartArray.length; i++) {
+        popUpText = "";
+        for (let el = 0; el < bodyPartArray[i].length; el++){
+            if (el ==0){
+                popUpText += textDict[bodyPartArray[i][el]][0];
+            }
+            popUpText += textDict[bodyPartArray[i][el]][1];
+        } 
         popups[i] = d3.select("#div_customContent")
             .append("div")
             .style("width", "400px")
@@ -319,7 +326,7 @@ async function wrapper() {
             .attr('class', 'popUp')
             .on("mouseover", function() {letClose = false;})
             .on("mouseout", function() {letClose = true;})
-            .html(textDict[bodyPartArray[i]]);
+            .html(popUpText);
         }
 
     box = d3.selectAll(".popUp")
@@ -327,7 +334,7 @@ async function wrapper() {
         .style("padding-left", "30px");
 
     title = d3.selectAll(".popUp")
-        .select("h1")
+        .selectAll("h1")
         .style("text-decoration", "underline double")
         .style("margin-bottom", "10px")
         .style("margin-top", "10px");
