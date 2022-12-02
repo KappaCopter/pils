@@ -203,7 +203,46 @@ async function wrapper() {
 
     console.log(dataLst);
     //console.log(results);
+
+    //Stolen wholesale from https://stackoverflow.com/questions/17267329/converting-unicode-character-to-string-format
+
+    function unicodeToChar(text) {
+        return text.replace(/\\u[\dA-F]{4}/gi, 
+               function (match) {
+                    return String.fromCharCode(parseInt(match.replace(/\\u/g, ''), 16));
+               });
+     }
   
+    async function wikipedia_intro(str1) {
+        
+        let str = String();
+        str = str1.replace("https://en.wikipedia.org/wiki/", "")
+
+
+        var url = "https://en.wikipedia.org/w/api.php"; 
+
+        var params = {
+            action: "query",
+            prop: "extracts",
+            exsentences: "1",
+            explaintext: "1",
+            format: "json",
+            titles: str
+        };
+
+        url = url + "?origin=*";
+        Object.keys(params).forEach(function(key){url += "&" + key + "=" + params[key];});
+        
+        console.log(url)
+
+        let res = await fetch(url);
+        let wiki =  await res.text();
+        wik = await wiki.split('"extract":"').pop().split('"}}}}')[0]
+        console.log(wik)
+        return unicodeToChar(wik)
+
+    }
+
     // Texts for the pop-up
     const textDict = Object.create(null);
     myText = "";
@@ -217,11 +256,14 @@ async function wrapper() {
             theDrugLst = theDiseaseLst[el2][2];
             myText += "<details>";
             if (diseaseWiki !== undefined){
-                myText += "<summary>" + disease + " <a href = '" + diseaseWiki + "' target = '_blank'>[Wiki]</a>";
+                wik = await wikipedia_intro(diseaseWiki);
+                myText += "<summary>" + disease  + " <a href = '" + diseaseWiki + "' target = '_blank'>[Wiki]</a>";
+                myText += "</summary> <ol>" + wik + "<br><br>";
             }else{
                 myText += "<summary>" + disease;
+                myText += "</summary> <ol>";
             }
-            myText += "</summary> <ol>";
+            myText += '<strong> List of drugs that physically interact with the disease.</strong><br>'
             for (el3 in theDrugLst){
                 myText += "<li>" + theDrugLst[el3] + "</li>";
             }
