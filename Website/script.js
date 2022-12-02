@@ -224,19 +224,20 @@ async function wrapper() {
             diseaseWiki = theDiseaseLst[el2][1];
             theDrugLst = theDiseaseLst[el2][3];
             myText += "<details>";
-            wik = "";
             if (diseaseWiki !== undefined){
                 //This is where we get the extract for every disease where it's applicable.
                 //Unfortunately, this makes the pop-up take a while to load as it's getting a bunch of articles that don't actually matter
                 wik = await wikipedia_intro(diseaseWiki);
+                myText += "<summary class='summary'>" + disease + " <a href = '" + diseaseWiki + "' target = '_blank'>[Wiki]</a></summary>" + wik;
+            }else{
+                myText += "<summary class='summary'>" + disease + "</summary>";
             }
-            myText += "<summary class='summary'>" + disease + " <a href = '" + diseaseWiki;
-            myText += "' target = '_blank'>[Wiki]</a></summary><ol>" + wik;
-            myText += "<details><summary class='subTitle'> List of drugs that physically interact with the disease.</summary>";
+            
+            myText += "<ul><details><summary class='subTitle'> List of drugs that physically interact with the disease.</summary>";
             for (el3 in theDrugLst){
                 myText += "<li>" + theDrugLst[el3] + "</li>";
             }
-            myText += "</ol></details></details>";
+            myText += "</ul></details></details>";
         }
         textDict[bodyPart] = [myTitle, myText];
     }
