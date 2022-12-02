@@ -93,19 +93,34 @@ async function wrapper() {
 
     function wikipedia_intro(name) {
 
+<<<<<<< Updated upstream
         var url = "https://en.wikipedia.org/w/api.php"
+=======
+    async function wikipedia_intro(str1) {
+        
+        let str = String();
+        str = str1.replace(" ", "_").replace(" ", "_").replace(" ","_").replace(" ","_").replace(" ", "_");
+
+
+        var url = "https://en.wikipedia.org/w/api.php"; 
+>>>>>>> Stashed changes
 
         var params = {
             action: "query",
             prop: "extracts",
             exintro: "1",
             explaintext: "1",
+<<<<<<< Updated upstream
             titles: name
+=======
+            titles: str
+>>>>>>> Stashed changes
         };
 
         url = url + "?origin=*";
         Object.keys(params).forEach(function(key){url += "&" + key + "=" + params[key];});
         
+<<<<<<< Updated upstream
         fetch(url).then(function(response) {
             return response.text();
         }).then(function(string) {
@@ -122,6 +137,27 @@ async function wrapper() {
             if (Array.from(Set1)[i] != undefined) {
                 w = wikipedia_intro(Array.from(Set2)[i])
                 str += '<a href = "' + Array.from(Set1)[i] + '">' + Array.from(Set2)[i] + '</a> <br>';
+=======
+        console.log(url)
+
+        let res = await fetch(url);
+        let wik =  await res.text();
+        console.log(wik)
+        return wik
+
+    }
+
+
+  
+    // Wikepedia Links function
+    async function links_for_set(Set1, Set2) {
+        let str = new String();
+        console.log(Set2.size)
+        for (let i = 0; i < Set2.size; i++) {
+            if (Array.from(Set1)[i] !== undefined) {
+                wik = await wikipedia_intro(Array.from(Set2)[i])
+                str += '<a href = "' + Array.from(Set1)[i] + '" target = "_blank">' + Array.from(Set2)[i] + '</a> <br>' + wik + "<br>";
+>>>>>>> Stashed changes
             }
             else {
                 str += Array.from(Set2)[i] + "<br>"
@@ -133,9 +169,17 @@ async function wrapper() {
     console.log("links_for_set is defined")
 
     // create tooltips
+<<<<<<< Updated upstream
     let bodyPartTextLiver = links_for_set(bodyPartLinkLiverSet, bodyPartTextLiverSet),
         bodyPartTextLungs = links_for_set(bodyPartLinkLungsSet, bodyPartTextLungsSet),
         bodyPartTextStomach = links_for_set(bodyPartLinkStomachSet, bodyPartTextStomachSet),
+=======
+    let bodyPartTextLiver = await links_for_set(bodyPartLinkLiverSet, bodyPartTextLiverSet),
+        bodyPartTextLungs = await links_for_set(bodyPartLinkLungsSet, bodyPartTextLungsSet),
+        bodyPartTextStomach = await links_for_set(bodyPartLinkStomachSet, bodyPartTextStomachSet),
+        bodyPartTextBrain = links_for_set(bodyPartLinkBrainSet, bodyPartTextBrainSet),
+        tooltipAdjustment = [bodyPartTextLiverSet, bodyPartTextLungsSet, bodyPartTextStomachSet, bodyPartTextBrainSet],
+>>>>>>> Stashed changes
         diseaseInformationLiver = Array.from(diseaseInformationLiverSet).join('<br>'),
         diseaseInformationLungs = Array.from(diseaseInformationLungsSet).join('<br>'),
         diseaseInformationStomach = Array.from(diseaseInformationStomachSet).join('<br>');
@@ -191,10 +235,35 @@ async function wrapper() {
     // visualize tooltips and popups
     for (let i = 0; i < bodyPartArray.length; i++) {
         d3.select("#circleCustomTooltip" + i)
+<<<<<<< Updated upstream
             .on("click", function(){return [d3.select("#closeButton").style("visibility", "visible"), popups[i].style("visibility", "visible")];})
             .on("mouseover", function(){return tooltips[i].style("visibility", "visible");})
             .on("mousemove", function(){return tooltips[i].style("top", (event.pageY-100)+"px").style("left",(event.pageX-100)+"px");})
             .on("mouseout", function(){return tooltips[i].style("visibility", "hidden");});
+=======
+            .on("click", function() {
+                closePopups();
+                d3.select("#highlightedImage"  + i).attr("visibility", "visible");
+                popups[i].style("visibility", "visible");
+            })
+            .on("mouseover", function() {
+                if (popups[i].style("visibility") === "hidden")
+                    tooltips[i].style("visibility", "visible");
+                d3.select("#highlightedImage"  + i).attr("visibility", "visible");
+            })
+            .on("mousemove", function() {
+                tooltips[i].style("top", (event.pageY- 30 - tooltipAdjustment[i].size * 40)+"px").style("left",(event.pageX-100)+"px");
+            })
+            .on("mouseout", function() {
+                if (popups[i].style("visibility") === "visible") {
+                    tooltips[i].style("visibility", "hidden");
+                } else {
+                    tooltips[i].style("visibility", "hidden");
+                    d3.select("#highlightedImage"  + i).attr("visibility", "hidden");
+                }
+                letClose = true;
+            });
+>>>>>>> Stashed changes
     }
 
     // close button functionality
