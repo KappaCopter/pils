@@ -90,6 +90,8 @@ let bodyPartTextLiverSet = new Set(),
     bodyPartLinkStomachSet = new Set(),
     bodyPartLinkBrainSet = new Set();
 
+//This query finds all wikidata entries with more than 4 languages that are an instance of a disease and
+//have an anatomical location. It also returns the anatomical location and the drugs that physically interact with the disease.
 const query = `SELECT DISTINCT ?bodypartLabel ?diseaseLabel ?drugLabel ?numLang ?article
 WHERE { 
 
@@ -213,8 +215,10 @@ async function wrapper() {
                });
      }
   
+    //generates a wikipedia api call to get the first sentence of the associated wikipedia article
     async function wikipedia_intro(str1) {
         
+        //The very braindead method of finding the title from the wikipedia url by removing everything before the page name
         let str = String();
         str = str1.replace("https://en.wikipedia.org/wiki/", "")
 
@@ -237,7 +241,8 @@ async function wrapper() {
 
         let res = await fetch(url);
         let wiki =  await res.text();
-        wik = await wiki.split('"extract":"').pop().split('"}}}}')[0]
+        wik = wiki.split('"extract":"').pop().split('"}}}}')[0]
+        // ^ removes everything but the extract itself. Again, not the best execution, but functional
         console.log(wik)
         return unicodeToChar(wik)
 
@@ -257,6 +262,8 @@ async function wrapper() {
             theDrugLst = theDiseaseLst[el2][2];
             myText += "<details>";
             if (diseaseWiki !== undefined){
+                //This is where we get the extract for every disease where it's applicable.
+                //Unfortunately, this makes the pop-up take a while to load as it's getting a bunch of articles that don't actually matter
                 wik = await wikipedia_intro(diseaseWiki);
                 myText += "<summary>" + disease  + " <a href = '" + diseaseWiki + "' target = '_blank'>[Wiki]</a>";
                 myText += "</summary> <ol>" + wik + "<br><br>";
