@@ -1,6 +1,6 @@
 // create the svg area
 const svg_width = 1000;
-const svg_height = 1000;
+const svg_height = 800;
 
 let svg_customContent = d3.select("#div_customContent")
   .append("svg")
@@ -114,28 +114,29 @@ async function wrapper() {
     let results = await fetching.json();
     results = await wdk.simplify.sparqlResults(results);
     
-    // List with all the data 
-    // ordered as such [[BodyPart, [[disease,  wikipediaLink, numLang drugLst], ..]], [BodyPart, [[disease,  wikipediaLink, drugLst], ..]],...]
+    // Create a list and dictionnary with all the data
+    // To access data more easily
+    // ordered as such [[BodyPart, [[disease,  wikipediaLink, numLang, drugLst], ..]], [BodyPart, [[disease,  wikipediaLink, numLang, drugLst], ..]],...]
     let dataLst = [];
     let dataDic = {};
+    
     // Set of the bodyParts
+    // Gathers all the bodyPart without any repeats
     let myBodyParts= new Set();
     for (let el in results){
             myBodyParts.add(results[el].bodypartLabel);
     }
-
-    // Make a list out of it
-    let bodyPartLst = [];
-    myBodyParts.forEach(function(value){
-        bodyPartLst.push(value);
-    })
+    // Make a list out of it (easier to work with because of indexes)
+    let bodyPartLst = Array.from(myBodyParts);
     
+    // Sets to uniquely store all the values of diseases and drugs
+    // testSet is used as comparison set
     let diseaseSet = new Set();
     let drugSet = new Set();
     let testSet = new Set();
 
     for (let el in bodyPartLst){
-        // find all the diseases associated to the body part
+        // find all the diseases and associated data (wiki and number of Language) for each body part
         for (let i = 0; i < results.length; i++){
             if (results[i].bodypartLabel === bodyPartLst[el]){
                 if (!testSet.has(results[i].diseaseLabel)){
@@ -144,16 +145,17 @@ async function wrapper() {
                 testSet.add(results[i].diseaseLabel);
             }   
         }
-        let diseaseLst = [];
-        diseaseSet.forEach(function(value){
-            diseaseLst.push(value);
-        })
+        // Create a list of out it (easier to work with because of indexes)
+        let diseaseLst = Array.from(diseaseSet);
+        // Resets sets for next bodypart
         diseaseSet.clear();
         testSet.clear();
-        // find all the drugs associated to the disease
+
+        // Go through all the disease and find all the associated drugs
         let myDiseaseLst = [];
         for (let el2 in diseaseLst){
             for (i=0; i<results.length; i++){
+                // diseaseLst[el2][0] only selects the disease out of the disease information
                 if (results[i].diseaseLabel === diseaseLst[el2][0]){
                     drugSet.add(results[i].drugLabel);
                 }   
@@ -169,6 +171,7 @@ async function wrapper() {
             myDiseaseLst.push([diseaseLst[el2][0], diseaseLst[el2][1], diseaseLst[el2][2], drugLst]);
             drugSet.clear();
         }
+        // Add all the disease and related information next to the bodypart
         dataLst.push([bodyPartLst[el], myDiseaseLst]);
         dataDic[bodyPartLst[el]] = myDiseaseLst;
     }   
@@ -211,22 +214,25 @@ async function wrapper() {
 
     }
 
-    // Texts for the pop-up
+    // Text for the pop-up
     const textDict = Object.create(null);
     
+    // Go through the data list and makes a text with html tags out of it
     for (el in dataLst){
         myText = "";
-        bodyPart = dataLst[el][0];
-        theDiseaseLst = dataLst[el][1];
+        bodyPart = dataLst[el][0]; // Name of the bodyPart
+        theDiseaseLst = dataLst[el][1]; // All the information about the bodyPart
         myTitle = "<h1>" + bodyPart + "</h1> \n";
+        // Go through all the associated information
         for (el2 in theDiseaseLst){
-            disease = theDiseaseLst[el2][0];
-            diseaseWiki = theDiseaseLst[el2][1];
-            theDrugLst = theDiseaseLst[el2][3];
+            disease = theDiseaseLst[el2][0]; // Name of the disease
+            diseaseWiki = theDiseaseLst[el2][1]; // WikiLink
+            theDrugLst = theDiseaseLst[el2][3]; // List of drugs associated with the disease
             myText += "<details>";
             if (diseaseWiki !== undefined){
-                //This is where we get the extract for every disease where it's applicable.
-                //Unfortunately, this makes the pop-up take a while to load as it's getting a bunch of articles that don't actually matter
+                // This is where we get the Wikipedia extract for every disease where it's applicable.
+                // Makes the pop-up take a while to load as it's getting a bunch of articles that don't show up in the website
+                // As it retrieves information from all the data of the wikidata query
                 wik = await wikipedia_intro(diseaseWiki);
                 myText += "<summary class='summary'>" + disease + " <a href = '" + diseaseWiki + "' target = '_blank'>[Wiki]</a></summary>" + wik;
             }else{
@@ -239,11 +245,13 @@ async function wrapper() {
             }
             myText += "</ul></details></details>";
         }
+        // Create a dictionnary with the title separated from the text
+        // Allows to only display the title of only one bodyPart
         textDict[bodyPart] = [myTitle, myText];
     }
 
     
-    // create tooltips
+    // create tooltips and Array with the bodyParts (contains array with all bodyParts related to a single bodyPart)
     let bodyPartArray = [["liver"], ["human lung"], ["stomach"], ["brain", "meninges", 'corpus callosum', "brain stem"]],
         tooltips = [];
 
@@ -262,11 +270,11 @@ async function wrapper() {
 
     //create popups
     let popups = [];
-  
     // boolean for correct popups closing
     let letClose = false;
 
     for (let i = 0; i < bodyPartArray.length; i++) {
+        // Only display the title of the first bodyPart, but the text of all related bodyParts
         popUpText = "";
         for (let el = 0; el < bodyPartArray[i].length; el++){
             if (el == 0){
@@ -278,7 +286,7 @@ async function wrapper() {
             .append("div")
             .style("width", "400px")
             .style("height", "600px")
-            .style("top", "800px")
+            .style("top", "950px")
             .style("left", "50%")
             .style("position", "absolute")
             .style("visibility", "hidden")
@@ -363,8 +371,12 @@ async function wrapper() {
 
     // append the svg object to the body of the page
     for (let i = 0; i < bodyPartArray.length; i++) {
+        // Create a dictionnary linking the name of disease to the number of languages
         let disease = {};
         for (el in bodyPartArray[i]){
+            // bodyPartArray[i][el] selects the bodyPart
+            // dataDic[bodyPartArray[i][el]] gets the information related to the bodyPart
+            // dataDic[bodyPartArray[i][el]][el2][0] selects the bodyPart name out of these informations
             for (el2 in dataDic[bodyPartArray[i][el]]){
                 disease[dataDic[bodyPartArray[i][el]][el2][0]] = dataDic[bodyPartArray[i][el]][el2][2];
             }
