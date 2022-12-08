@@ -1,7 +1,6 @@
 
-/* ----------------------------------------- */
 /* Style elements that apply to all webpages */
-/* ----------------------------------------- */
+
 
 .titl {
   width: calc(100%);
@@ -16,10 +15,11 @@
 body {
   margin: 0;
   font-family: 'DM Sans';
-  min-width: 1200px;
+  min-width: 1300px;
 }
 
 /* Navigation bar */
+
 .bar {
   background-color: #E5DACE;
 }
@@ -65,9 +65,9 @@ li a:hover {
 
 .boxUnitTitle {
   font-size: 6em;
-  line-height: 75px;
+  line-height: 10px;
+  height: 100px;
   text-align: center;
-
   transition-property: border-color, border-style, border-width;
   transition-duration: 0.3s;
 }
@@ -79,12 +79,13 @@ li a:hover {
 }
 
 .figure {
-  margin: auto;
-  height: auto;
-  min-width: 80%;
   border-radius: 25px;
   border: 4px solid #696969;
   padding: 20px;
+  margin: auto;
+  height: auto;
+  width: auto;
+
 }
 
 .caption {
@@ -96,9 +97,7 @@ li a:hover {
 }
 
 
-/* -------------------------------------------- */
 /*  Style elements that apply only to Homepage  */
-/* -------------------------------------------- */
 
 .stepOrdinal {
   width: 28px; height: 28px;
@@ -121,13 +120,13 @@ li a:hover {
 }
 
 .clusterButton {
-  width: 120px; height: 48px;
-  background-color: #f2d9f2;
-  border: none;
   font-size: 16px;
   font-family: 'DM Sans';
+  width: 120px; 
+  height: 48px;
+  background-color: #f2d9f2;
+  border: none;
   padding: 5px 10px;
-	
   transition: transform 330ms ease-in-out;
   display: inline-block;
 }
@@ -137,58 +136,63 @@ li a:hover {
 }
 
 .legend {
-  text-align: left;
   font-size: 1.3em;
   display:inline-block;
+  text-align: left;
+
 }
 
 #legendLabel {
   font-size: 1.3em;
 }
 
-/* ----------------------------------------- */
+
 /*  Style elements that apply only to About  */
-/* ----------------------------------------- */
+
 
 .photos img {
-    width: 250px;
     height: 250px;
+    width: 250px;
+
 }
 
 /* Give the photos a corner border */
-/* Adapted from Arkej, 2017 - */ 
+/* Got this from Arkej, 2017 - */ 
 /* https://stackoverflow.com/questions/42832749/create-corner-border-in-css */
 
 .photoBor {
     position: relative;
+    margin: 20px;
     width: 250px;
     height: 250px;
-    margin: 20px;
+
 }
 
 .photoBor:after {
+    border-top: 15px solid #696969;
+    border-right: 15px solid #696969;
     display: block;
     width: 50px;
     height: 50px;
     position: absolute;
     top: -25px;
     right: 40px;
-    border-top: 15px solid #696969;
-    border-right: 15px solid #696969;
+
 }
 
 .photoBor:before {
+    border-bottom: 15px solid #696969;
+    border-left: 15px solid #696969;
     display: block;
     width: 50px;
     height: 50px;
     position: absolute;
     bottom: -25px;
     left: 40px;
-    border-bottom: 15px solid #696969;
-    border-left: 15px solid #696969;
+
 }
 
-/* Line and Center the three photos */
+/* Line and Center the Four Profile Pictures */
 .photos {
   display: flex;
 }
