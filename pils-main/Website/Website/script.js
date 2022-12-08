@@ -286,7 +286,7 @@ async function wrapper() {
             .append("div")
             .style("width", "400px")
             .style("height", "600px")
-            .style("top", "950px")
+            .style("top", "800px")
             .style("left", "50%")
             .style("position", "absolute")
             .style("visibility", "hidden")
