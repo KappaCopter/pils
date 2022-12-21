@@ -64,7 +64,7 @@ li a:hover {
 
 .boxUnitTitle {
   font-size: 6em;
-  line-height: 75px;
+  line-height: 10px;
   height: 100px;
   text-align: center;
   transition-property: border-color, border-style, border-width;
@@ -83,7 +83,7 @@ li a:hover {
   padding: 20px;
   margin: auto;
   height: auto;
-  width: auto;
+  min-width: 80%;
 
 }
 
